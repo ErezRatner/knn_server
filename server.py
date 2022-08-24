@@ -28,10 +28,10 @@ def loginpage():
             
                         <form action="/mainpage" method="post">
                         <b>ID:</b> &nbsp;
-                        <input type="text" name="id"> 
+                        <input type="text" name="id" required> 
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <b>PASSWORD:</b> &nbsp;
-                        <input type="password" name="password"><br><br>
+                        <input type="password" name="password" required><br><br>
                         <input type="button" onclick="location.href='/register'" value="Register">
                         <input type="reset" value="Reset">
                         <input type="submit" value="Submit">
