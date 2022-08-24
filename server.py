@@ -1,5 +1,7 @@
 from flask import Flask, request, render_template
 import pymongo, numpy as np, cv2
+from PIL import Image
+from knn import Knn, load_model
 
 uri = "mongodb://localhost:27017/"
 myclient = pymongo.MongoClient(uri)
@@ -166,16 +168,16 @@ def mainpage():
             </html>
         """
 
-import os
-from PIL import Image
-from werkzeug.utils import secure_filename
 
 @app.route("/photoprediction", methods=['GET', 'POST'])
 def photoprediction():
     img = request.files['img']
     imgstr = request.files['img'].read()
-    img_in_np = cv2.imdecode(np.fromstring(imgstr, np.uint8), cv2.IMREAD_COLOR)
-    print(img_in_np)
+    img_in_np = cv2.imdecode(np.fromstring(imgstr, np.uint8), cv2.IMREAD_GRAYSCALE)
+    print(img_in_np.shape)
+
+    knn = load_model("knn_server/knn")
+    pred = knn.predict([img_in_np.reshape(28*28,)])
 
     # image = Image.fromarray(img_in_np, 'RGB')
     # image.show()
@@ -187,10 +189,10 @@ def photoprediction():
             </head>
             <body>
                 <center>
-                    <font size=7><b>PREDICTION IS: </b></font>
+                    <font size=7><b>PREDICTION IS </b></font>
                     </br></br></br>
-                    <font size=4><b></b></font>
-                    </br></br>
+                    <font size=6><b>{pred[0]}</b></font>
+
                 </center>
             </body>
         </html>
