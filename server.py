@@ -1,5 +1,5 @@
-from flask import Flask, request
-import pymongo
+from flask import Flask, request, render_template
+import pymongo, numpy as np, cv2
 
 uri = "mongodb://localhost:27017/"
 myclient = pymongo.MongoClient(uri)
@@ -8,7 +8,7 @@ users = mydb["users"] # CONNECT TO COLLECTION
 
 app = Flask(__name__)
 
-@app.route("/") ### MAIN PAGE
+@app.route("/")
 def loginpage():
     return f"""
         <html>
@@ -127,7 +127,6 @@ def success():
             </html>
         """ 
     
-
 @app.route("/mainpage", methods=['POST'])
 def mainpage():
     id = request.form['id']
@@ -136,6 +135,7 @@ def mainpage():
     user = users.find_one({"id":id, "password":password})
 
     if len(id)>0 and len(password)>0:
+        # USER NOT EXISTS
         if user == None:
             return """
                 <html>
@@ -153,12 +153,48 @@ def mainpage():
                 <body>
                     <center>
                         <font size=7><b>WELCOME {user["first_name"]} {user["last_name"]}</b></font>
+                        </br></br></br>
+                        <font size=4><b>PLEASE CHOOSE PICTURE AND UPLOAD IT TO SERVER</b></font>
+                        </br></br>
+                        <form action="/photoprediction" method="post" enctype="multipart/form-data">
+                            <label for="img">Select image:</label>
+                            <input type="file" id="img" name="img" accept="image/*">
+                            <input type="submit" style="width:100">
+                        </form>
                     </center>
                 </body>
             </html>
         """
 
+import os
+from PIL import Image
+from werkzeug.utils import secure_filename
 
+@app.route("/photoprediction", methods=['GET', 'POST'])
+def photoprediction():
+    img = request.files['img']
+    imgstr = request.files['img'].read()
+    img_in_np = cv2.imdecode(np.fromstring(imgstr, np.uint8), cv2.IMREAD_COLOR)
+    print(img_in_np)
+
+    # image = Image.fromarray(img_in_np, 'RGB')
+    # image.show()
+
+    return f"""
+        <html>
+            <head>
+                <title>digit Prediction</title>
+            </head>
+            <body>
+                <center>
+                    <font size=7><b>PREDICTION IS: </b></font>
+                    </br></br></br>
+                    <font size=4><b></b></font>
+                    </br></br>
+                </center>
+            </body>
+        </html>
+    """
 if __name__ == "__main__":
     app.run()
 
